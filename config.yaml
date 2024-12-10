@@ -1,0 +1,168 @@
+General:
+  ConsoleUI: true
+  InteractiveControl: false
+  DummyModbus: true
+
+Pump:
+  CheckInterval: 10ms # duration
+  DeadBand: 0.3 # - bar from SetPoint
+  SetPoint: 3.0 # bar
+  Attach:
+    ObservationFrequency: 92
+    ObservationDuration: 5s # duration
+    TransitionDuration: 6s # duration at range 100%
+    TransitionEquation: 2
+  Detach:
+    ObservationFrequency: 78
+    ObservationDuration: 5s # duration
+    TransitionDuration: 6s # duration at range 100%
+    TransitionEquation: 2
+  Cutoff:
+    MaximumOperationalPressure: 3.6 # suddenly cutoff if pressure is above
+    SuddenStopDelay: 0.5s # duration
+    ObservationFrequency: 20.0 # if frequency below
+    ObservationFrequencyDuration: 5s # duration
+    ObservationPressure: 0.3 # if pressure above SetPoint + bar
+    ObservationPressureDuration: 3s # duration
+  Stepping:
+    Enable: true
+    Interval: 120s # duration
+    TransitionDuration: 10s # duration at range 100%
+    TransitionEquation: 2
+  Boost: # only can run if pv + boost pressure > sv
+    Enable: true
+    Pressure: +0.15 # bar
+    Duration: 0.6s # duration
+    Interval: 35s # duration
+  PID:
+    ProportionalGain: 26
+    IntegralGain: 22
+    DerivativeGain: 0.0
+    LowPassTimeConstant: 1s # duration
+    MinOutputFrequency: 0.0
+    MaxOutputFrequency: 100.0
+  Safety:
+    PressureTransmitterCurrent: 3.6 # mA
+  Warning:
+    UnderPressure:
+      PressureBelow: 2.5 # bar
+      DetectionDuration: 5s # duration
+    OverPressure:
+      PressureAbove: 3.5 # bar
+      DetectionDuration: 5s # duration
+
+GPIO:
+  AnalogInput:
+    Addr: 0x48
+    Bus: 1
+    GainForVoltage: 2.0 # voltage
+    DataRate: 64 # 8, 16, 32, 64, 128, 250, 475, 860
+  DigitalInput:
+    Addr: 0x20
+    Bus: 1
+  DigitalOutput:
+    Addr: 0x24
+    Bus: 1
+
+Modbus:
+  - ModbusID: 0
+    Url: "rtu:///dev/ttyUSB0"
+    Speed: 9600
+    DataBits: 8
+    Parity: 0 # 0 = PARITY_NONE, 1 = PARITY_EVEN, 2 = PARITY_ODD
+    StopBits: 1
+    Timeout: 0.5s # duration
+    Endianness: 1 # 1 = BIG_ENDIAN, 2 = LITTLE_ENDIAN
+    WordOrder: 1 # 1 = HIGH_WORD_FIRST, 2 = LOW_WORD_FIRST
+  - ModbusID: 1
+    Url: "rtu:///dev/ttyUSB1"
+    Speed: 9600
+    DataBits: 8
+    Parity: 0 # 0 = PARITY_NONE, 1 = PARITY_EVEN, 2 = PARITY_ODD
+    StopBits: 1
+    Timeout: 0.5s # duration
+    Endianness: 1 # 1 = BIG_ENDIAN, 2 = LITTLE_ENDIAN
+    WordOrder: 1 # 1 = HIGH_WORD_FIRST, 2 = LOW_WORD_FIRST
+
+Peripheral:
+  PowerRelayPin: 0 # digital output
+  RunningIndicatorPin: 5 # digital output
+  WarningIndicatorPin: 4 # digital output
+  PressureTransmitter:
+    MaximumPressure: 10
+    AnalogInputPin: 0
+    VoltageRange: {Min: 0.4, Max: 2.0}
+    Correction: { A: 0.002770552425, B: -0.007859636824, C: 1.012298153, D: -0.002199860833}
+  WaterLevelController:
+    DigitalInputPin: 7
+    ActiveLevel: 1
+  Monitoring:
+    Enable: true
+    Interval: 2s
+  Drives:
+    - ModbusID: 0
+      UnitID: 1
+      Initialize: [{ Addr: 258, Data: 2 }, { Addr: 259, Data: 4 }, {Addr: 2, Data: 0}, { Addr: 1, Data: 3 }]
+      Finalize: [{Addr: 2, Data: 0}, { Addr: 1, Data: 3 }]
+      StopCommand: { Addr: 1, Data: 3 }
+      StartCommand: { Addr: 1, Data: 1 }
+      SetFreqCommand: { Range: 10000, Addr: 2 }
+      Monitoring: [
+        { Addr: 32, RegType: 0 },  # power_status
+        { Addr: 33, RegType: 0 },  # fault
+        { Addr: 34, RegType: 0 },  # warning
+        { Addr: 35, RegType: 0 },  # freq
+        { Addr: 36, RegType: 0 },  # voltage
+        { Addr: 37, RegType: 0 },  # current
+        { Addr: 38, RegType: 0 },  # speed
+        { Addr: 39, RegType: 0 },  # power
+      ]
+    - ModbusID: 1
+      UnitID: 2
+      Initialize: [{ Addr: 258, Data: 2 }, { Addr: 259, Data: 4 }, {Addr: 2, Data: 0}, { Addr: 1, Data: 3 }]
+      Finalize: [{Addr: 2, Data: 0}, { Addr: 1, Data: 3 }]
+      StopCommand: { Addr: 1, Data: 3 }
+      StartCommand: { Addr: 1, Data: 1 }
+      SetFreqCommand: { Range: 10000, Addr: 2 }
+      Monitoring: [
+        { Addr: 32, RegType: 0 },  # power_status
+        { Addr: 33, RegType: 0 },  # fault
+        { Addr: 34, RegType: 0 },  # warning
+        { Addr: 35, RegType: 0 },  # freq
+        { Addr: 36, RegType: 0 },  # voltage
+        { Addr: 37, RegType: 0 },  # current
+        { Addr: 38, RegType: 0 },  # speed
+        { Addr: 39, RegType: 0 },  # power
+      ]
+
+Mqtt:
+  Enable: true
+  Broker: 'localhost:1883'
+  ClientID: ''
+  Username: ''
+  Password: ''
+  Publish:
+    PressureTransmitter: # PressureTransmitter
+      Enable: true
+      Interval: 0.2s
+    Pump: # Pump
+      Enable: true
+      Interval: 3s
+    Status: # Status
+      Enable: true
+      Interval: 1s
+  OnEvent: # OnEvent
+    OnRunningCount: true
+    OnForceStop: true
+    OnBoosting: true
+    OnUnderPressure: true
+    OnOverPressure: true
+    OnPressureTransmitterError: true
+    OnWaterShortage: true
+
+HttpServer:
+  Enable: true
+  Bind: "localhost:10000"
+  ReadTimeout: 70 # satuan detik
+  WriteTimeout: 70 # satuan detik
+  UseCors: true

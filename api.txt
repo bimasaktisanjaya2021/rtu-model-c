@@ -1,0 +1,11 @@
+# MQTT
+mosquitto_sub -h localhost -t "PressureTransmitter"
+mosquitto_sub -h localhost -t "Pump"
+mosquitto_sub -h localhost -t "Status"
+mosquitto_sub -h localhost -t "OnEvent"
+
+# HttpServer:
+curl -H 'Content-Type: application/json' -d '{"value": 3.0}' -X PUT http://localhost:10000/set_point
+curl -X POST http://localhost:10000/reset
+curl -X POST http://localhost:10000/stepping
+curl -X POST http://localhost:10000/boost
